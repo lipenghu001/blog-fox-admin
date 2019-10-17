@@ -91,7 +91,7 @@ npm run build
 
 ### 管理员账号创建
 
-![](http://pzgmze1tx.bkt.clouddn.com/1571306790685)
+![](http://cdn.friendlp.cn/1571306790685)
 
 管理后台的登录账号要自己创建
 
@@ -100,7 +100,7 @@ npm run build
 如果是本地的可以像这样子创建，如果是服务器上的，请把 url 修改一下，
 
 
-![注册](http://pzgmze1tx.bkt.clouddn.com/1571307105839)
+![注册](http://cdn.friendlp.cn/1571307105839)
 
 
 - 1.  url 

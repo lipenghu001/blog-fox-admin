@@ -159,7 +159,7 @@ class ArticleCreate extends React.Component {
   handleUploadChange(info) {
     let responseKey = info.file.response && info.file.response.key
     console.log(responseKey);
-    let img_url = `http://pzgmze1tx.bkt.clouddn.com/${responseKey}`
+    let img_url = `http://cdn.friendlp.cn/${responseKey}`
     this.setState({
       img_url: img_url
     })
