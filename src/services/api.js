@@ -121,6 +121,10 @@ export async function addReplyMessage(params) {
 }
 
 // 文章
+export async function queryUploadToken() {
+  return request(`/api/queryUploadToken`);
+}
+
 export async function queryArticle(params) {
   return request(`/api/getArticleListAdmin?${stringify(params)}`);
 }

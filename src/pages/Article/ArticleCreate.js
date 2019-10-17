@@ -1,11 +1,16 @@
 import React from 'react';
-import { Input, Select, Button, notification } from 'antd';
+import { Input, Select, Button, notification, Upload, Icon, Row, Col } from 'antd';
 import { connect } from 'dva';
 import SimpleMDE from 'simplemde';
 import marked from 'marked';
 import highlight from 'highlight.js';
 import 'simplemde/dist/simplemde.min.css';
+import * as qiniu from 'qiniu-js'
 import './style.less';
+import { queryUploadToken } from '@/services/api'
+import { Label } from 'bizcharts';
+
+// import daocheng from '../../../public/daocheng.jpeg'
 
 @connect(({ article, tag, category }) => ({
   article,
@@ -35,6 +40,9 @@ class ArticleCreate extends React.Component {
       category: '',
       tagsDefault: [],
       categoryDefault: [],
+      uploadToken: '',
+      img_url: '',
+      fileKey: ''
     };
     this.handleSearchTag = this.handleSearchTag.bind(this);
     this.handleSearchCategory = this.handleSearchCategory.bind(this);
@@ -52,6 +60,7 @@ class ArticleCreate extends React.Component {
   componentDidMount() {
     this.handleSearchTag();
     this.handleSearchCategory();
+    // this.fetchUploadToken();
 
     this.state.smde = new SimpleMDE({
       element: document.getElementById('editor').childElementCount,
@@ -73,6 +82,146 @@ class ArticleCreate extends React.Component {
         });
       },
     });
+  }
+
+  // 图片上传
+  qiniuUpload(params) {
+    // 从服务端获取token
+    let token //上传验证信息，前端通过接口请求后端获得
+
+    let file  // 上传的文件
+    let key  //文件资源名
+    
+    let config = {
+      // useCdnDomain: true,
+      region: qiniu.region.z1
+    };
+    let observer = {
+      next(res){
+        // ...
+      },
+      error(err){
+        // ...
+      }, 
+      complete(res){
+        // ...
+      }
+    }
+    let putExtra = {
+      fname: "", //文件原文件名
+      params: {}, //用来放置自定义变量
+      mimeType: ["image/png", "image/jpeg", "image/gif"] //用来限定上传文件类型，指定null时自动判断文件类型。
+    };
+    qiniu.upload(file, 'daocheng', token, putExtra, config)
+  }
+
+  handleUpload() {
+    console.log('上传');
+    // 从服务端获取token
+    let token = this.props.article.uploadToken //上传验证信息，前端通过接口请求后端获得
+
+    let file = daocheng  // 上传的文件
+    let key = 'daocheng.jpeg'  //文件资源名
+    
+    let config = {
+      // useCdnDomain: true,
+      region: qiniu.region.z1
+    };
+    let observer = {
+      next(res){
+        // ...
+        console.log(res);
+      },
+      error(err){
+        // ... 
+        console.log(err.message);
+      }, 
+      complete(res){
+        console.log(res);
+        // ...
+      }
+    }
+    let putExtra = {
+      fname: "", //文件原文件名
+      params: {}, //用来放置自定义变量
+      mimeType: ["image/png", "image/jpeg", "image/gif", "image/jpg"] //用来限定上传文件类型，指定null时自动判断文件类型。
+    };
+    console.log('file:'+file, 'key:'+key, 'token:'+token, 'putExtra:'+putExtra, 'config:'+config);
+    let observable = qiniu.upload(file, key, token, putExtra, config)
+    let subscription = observable.subscribe(observer) // 上传开始
+  }
+
+  async beforeUpload(file) {
+    await this.fetchUploadToken(file)
+    return true
+  }
+
+  handleUploadChange(info) {
+    let responseKey = info.file.response && info.file.response.key
+    console.log(responseKey);
+    let img_url = `http://pzgmze1tx.bkt.clouddn.com/${responseKey}`
+    this.setState({
+      img_url: img_url
+    })
+  }
+
+  // 生成上传凭证
+  getUploadToken = () => {
+    return {
+      token: this.state.uploadToken,
+      key: this.state.fileKey
+    }
+  }
+
+  // 请求上传凭证
+  async fetchUploadToken(file) {
+    const params = {
+      documentType: '3',
+      key: Date.now() + Math.floor(Math.random() * (999999 - 100000) + 100000) + 1
+    }
+    const res = await queryUploadToken()
+    if (res.data.uploadToken) {
+      this.setState({
+        uploadToken: res.data.uploadToken,
+        fileKey: params.key
+      })
+    }
+    // const { dispatch } = this.props;
+    // new Promise(resolve => {
+    //   dispatch({
+    //     type: 'article/queryUploadToken',
+    //     payload: {
+    //       resolve,
+    //     },
+    //   });
+    // }).then(res => {
+    //   console.log(res);
+    //   if (res.data.uploadToken) {
+    //     console.log(res.data.uploadToken,params.key);
+    //     this.setState({
+    //       uploadToken: res.data.uploadToken,
+    //       fileKey: params.key
+    //     })
+    //   }
+    // })
+  }
+
+  // 图片转成base64，，可以用于图片预览
+  getBase64(img, callback){
+    const reader = new FileReader()
+    reader.addEventListener('load',()=>{callback(reader.result)})
+    reader.readAsDataURL(img)
+  }
+
+  //文件上传操作
+  handlerUploadChange(info) {
+    if (info.file.status === 'done') {
+      const imageKey = info.file.response.key
+      this.setState({ imageKey })
+      this.getBase64(info.file.originFileObj, img_url => {
+        this.setState( { img_url })
+      })
+    }
   }
 
   handleSubmit() {
@@ -315,6 +464,8 @@ class ArticleCreate extends React.Component {
   };
 
   render() {
+    // const { uploadToken } = this.props.article
+    const token_and_key = this.getUploadToken()
     const { tagList } = this.props.tag;
     const { categoryList } = this.props.category;
     const children = [];
@@ -397,6 +548,47 @@ class ArticleCreate extends React.Component {
           value={this.state.desc}
           onChange={this.handleChange}
         />
+        {/* <Upload
+          name='file'
+          accept='.png, .jpg, .jpeg'
+          action='http://upload-z1.qiniu.com'
+          showUploadList={true}
+          multiple={true}
+          data={
+            token_and_key
+          }
+          beforeUpload={this.beforeUpload.bind(this)}
+          onChange={this.handleUploadChange}
+        >
+          {
+            this.state.img_url
+            ? <img src={this.state.img_url} />
+            : <Icon type='plus' />
+          }
+        </Upload> */}
+        <Row gutter={24} align={'middle'} style={{ height: '50px' }}>
+          <Col span={6} style={{ textAlign: 'left' }}>
+            <span style={{ height: '32px', textAlign: 'left', lineHeight: '32px',fontSize:'18px' }}>选择封面图片:</span>
+          </Col>
+          <Col span={10}>
+            <Upload
+              name='file'
+              accept='.png, .jpg, .jpeg'
+              action='http://upload-z1.qiniu.com'
+              showUploadList={true}
+              multiple={true}
+              data={
+                token_and_key
+              }
+              beforeUpload={this.beforeUpload.bind(this)}
+              onChange={this.handleUploadChange.bind(this)}
+            >
+              <Button>
+                <Icon type="upload" /> 选择文件
+              </Button>
+            </Upload>
+          </Col>
+        </Row>
         <Input
           style={normalCenter}
           addonBefore="封面链接"
@@ -465,6 +657,16 @@ class ArticleCreate extends React.Component {
           {categoryChildren}
         </Select>
         <div>
+          {/* <Button
+            onClick={() => {
+              this.handleUpload();
+            }}
+            loading={this.state.loading}
+            style={{ marginBottom: '10px' }}
+            type="primary"
+          >
+            上传
+          </Button> */}
           <Button
             onClick={() => {
               this.handleSubmit();

@@ -1,4 +1,5 @@
 import {
+  queryUploadToken,
   queryArticle,
   delArticle,
   updateArticle,
@@ -12,6 +13,7 @@ export default {
   namespace: 'article',
 
   state: {
+    uploadToken: '',
     articleList: [],
     total: 0,
     articleDetail: {
@@ -35,6 +37,18 @@ export default {
   },
 
   effects: {
+    *queryUploadToken({ payload }, { call, put }) {
+      const { resolve, params } = payload;
+      const response = yield call(queryUploadToken, params);
+      !!resolve && resolve(response); // 返回数据
+      // console.log('response :', response)
+      if (response.code === 0) {
+        yield put({
+          type: 'saveUploadToken',
+          payload: response.data.uploadToken,
+        });
+      }
+    },
     *queryArticle({ payload }, { call, put }) {
       const { resolve, params } = payload;
       const response = yield call(queryArticle, params);
@@ -107,6 +121,12 @@ export default {
       return {
         ...state,
         articleDetail: payload,
+      };
+    },
+    saveUploadToken(state, { payload }) {
+      return {
+        ...state,
+        uploadToken: payload,
       };
     },
   },
