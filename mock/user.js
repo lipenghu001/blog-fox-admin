@@ -2,54 +2,53 @@
 export default {
   // 支持值为 Object 和 Array
   'GET /api/currentUser': {
-    name: 'BiaoChenXuying',
-    // avatar: 'https://gw.alipayobjects.com/zos/rmsportal/BiazfanxmamNRoxxVxka.png',
-    avatar: 'http://p61te2jup.bkt.clouddn.com/WechatIMG8.jpeg',
+    name: 'Lipeng',
+    avatar: 'http://pzgmze1tx.bkt.clouddn.com/1571303152930',
     userid: '00000001',
     email: 'antdesign@alipay.com',
-    signature: '海纳百川，有容乃大',
-    title: '交互专家',
-    group: 'BiaoChenXuying',
+    signature: '很多痛苦是自己的价值观所带来的。',
+    title: '大演说家',
+    group: 'FirstLove',
     tags: [
       {
         key: '0',
-        label: '很有想法的',
+        label: '爱情',
       },
       {
         key: '1',
-        label: '专注设计',
+        label: '专注',
       },
       {
         key: '2',
-        label: '辣~',
+        label: '音乐',
       },
       {
         key: '3',
-        label: '大长腿',
+        label: '健身',
       },
       {
         key: '4',
-        label: '川妹子',
+        label: '海边',
       },
       {
         key: '5',
-        label: '海纳百川',
+        label: '大闸蟹',
       },
     ],
     notifyCount: 12,
     country: 'China',
     geographic: {
       province: {
-        label: '浙江省',
+        label: '江苏省',
         key: '330000',
       },
       city: {
-        label: '杭州市',
+        label: '连云港市',
         key: '330100',
       },
     },
-    address: '西湖区工专路 77 号',
-    phone: '0752-268888888',
+    address: '赣榆区柘汪镇',
+    phone: '153********',
   },
   // GET POST 可省略
   'GET /api/users': [
